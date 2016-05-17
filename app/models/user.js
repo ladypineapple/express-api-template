@@ -1,7 +1,7 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-const bookshelf = require('../middleware/postgres');
+const bookshelf = require('../middleware/bookshelf');
 
 const User = bookshelf.Model.extend({
   tableName: 'users'
