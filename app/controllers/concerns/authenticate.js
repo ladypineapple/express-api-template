@@ -23,7 +23,7 @@ const authenticate = (req, res, next) => {
     let opts = auth.replace(tokenRegex, '').split(separatorRegex);
     let signedToken = opts.shift();
     let token = decodeToken(signedToken);
-    User.findOne({ token })
+    User.fetch({ token })
     .then(user => {
       if (user) {
         req.currentUser = user.toObject();

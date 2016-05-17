@@ -29,7 +29,7 @@ const getToken = () =>
 const userFilter = { passwordDigest: 0, token: 0 };
 
 const index = (req, res, next) => {
-  User.find({}, userFilter)
+  User.fetch({}, userFilter)
     .then(users => res.json({ users }))
     .catch(err => next(err));
 };
@@ -54,10 +54,9 @@ const signup = (req, res, next) => {
   ).then(() =>
     new User(user).save()
   ).then(newUser => {
-    let user = newUser.toObject();
     delete user.token;
     delete user.passwordDigest;
-    res.json({ user });
+    res.json({ newUser });
   }).catch(makeErrorHandler(res, next));
 
 };
