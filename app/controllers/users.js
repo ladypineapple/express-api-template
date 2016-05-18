@@ -83,15 +83,16 @@ const signin = (req, res, next) => {
 
 const signout = (req, res, next) => {
   getToken().then(token =>
-    User.findOneAndUpdate({
+    User.where({
       _id: req.params.id,
       token: req.currentUser.token,
     }, {
       token,
     })
-  ).then((user) =>
-    user ? res.sendStatus(200) : next()
-  ).catch(next);
+  ).then((user) => {
+    console.log(user);
+    return user ? res.sendStatus(200) : next();
+  }).catch(next);
 };
 
 const changepw = (req, res, next) => {
