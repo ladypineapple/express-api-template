@@ -36,7 +36,8 @@ const index = (req, res, next) => {
 };
 
 const show = (req, res, next) => {
-  User.findById(req.params.id, userFilter)
+  User.where({id: req.params.id}, userFilter)
+    .fetch()
     .then(user => user ? res.json({ user }) : next())
     .catch(err => next(err));
 };
