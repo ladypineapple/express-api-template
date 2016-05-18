@@ -29,7 +29,8 @@ const getToken = () =>
 const userFilter = { passwordDigest: 0, token: 0 };
 
 const index = (req, res, next) => {
-  User.fetch({}, userFilter)
+  User.where({}, userFilter)
+    .fetchAll()
     .then(users => res.json({ users }))
     .catch(err => next(err));
 };
@@ -89,10 +90,9 @@ const signout = (req, res, next) => {
     }, {
       token,
     })
-  ).then((user) => {
-    console.log(user);
-    return user ? res.sendStatus(200) : next();
-  }).catch(next);
+  ).then((user) =>
+    user ? res.sendStatus(200) : next()
+  ).catch(next);
 };
 
 const changepw = (req, res, next) => {
