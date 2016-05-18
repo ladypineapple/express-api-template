@@ -1,77 +1,55 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
+const Bookshelf = require('../middleware/bookshelf');
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,
-    required: true,
+const User = Bookshelf.Model.extend({
+  tableName: 'users',
+
+  constructor: function() {
+    Bookshelf.Model.apply(this, arguments);
+
+    this.on('saving', function (model, attrs, options, next) {
+      let _this = this;
+
+      if (!_this._password) {
+        return next();
+      }
+
+      return new Promise((resolve, reject) =>
+        bcrypt.genSalt(null, (err, salt) =>
+            err ? reject(err) : resolve(salt))
+      ).then((salt) =>
+        new Promise((resolve, reject) =>
+          bcrypt.hash(_this._password, salt, (err, data) =>
+            err ? reject(err) : resolve(data)))
+      ).then((digest) => {
+        _this.set({passwordDigest: digest});
+      }).catch((error) => {
+        next(error);
+      });
+    });
   },
-  token: {
-    type: String,
-    require: true,
+
+  comparePassword: function(password) {
+    let _this = this;
+    
+    return new Promise((resolve, reject) =>
+      bcrypt.compare(password, _this.attributes.passwordDigest, (err, data) =>
+          err ? reject(err) : data ? resolve(data) : reject(new Error('Not Authorized')))
+      ).then(() => _this);
   },
-  passwordDigest: String,
-}, {
-  timestamps: true,
-});
 
-userSchema.plugin(uniqueValidator);
-
-userSchema.methods.comparePassword = function (password) {
-  let _this = this;
-
-  return new Promise((resolve, reject) =>
-    bcrypt.compare(password, _this.passwordDigest, (err, data) =>
-        err ? reject(err) : data ? resolve(data) : reject(new Error('Not Authorized')))
-    ).then(() => _this);
-};
-
-userSchema.virtual('password').set(function (password) {
-  this._password = password;
-});
-
-userSchema.pre('save', function (next) {
-  let _this = this;
-
-  if (!_this._password) {
-    return next();
+  virtuals: {
+    password: {
+      set: function(password) {
+        this._password = password;
+      },
+      get: function() {
+        return this._password;
+      }
+    }
   }
-
-  new Promise((resolve, reject) =>
-    bcrypt.genSalt(null, (err, salt) =>
-        err ? reject(err) : resolve(salt))
-  ).then((salt) =>
-    new Promise((resolve, reject) =>
-      bcrypt.hash(_this._password, salt, (err, data) =>
-        err ? reject(err) : resolve(data)))
-  ).then((digest) => {
-    _this.passwordDigest = digest;
-    next();
-  }).catch((error) => {
-    next(error);
-  });
 });
 
-userSchema.methods.setPassword = function (password) {
-  let _this = this;
-
-  return new Promise((resolve, reject) =>
-    bcrypt.genSalt(null, (err, salt) =>
-        err ? reject(err) : resolve(salt))
-  ).then((salt) =>
-    new Promise((resolve, reject) =>
-      bcrypt.hash(password, salt, (err, data) =>
-        err ? reject(err) : resolve(data)))
-  ).then((digest) => {
-    _this.passwordDigest = digest;
-    return _this.save();
-  });
-};
-
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = Bookshelf.model('User', User);

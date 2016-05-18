@@ -29,13 +29,15 @@ const getToken = () =>
 const userFilter = { passwordDigest: 0, token: 0 };
 
 const index = (req, res, next) => {
-  User.find({}, userFilter)
+  User.where({}, userFilter)
+    .fetchAll()
     .then(users => res.json({ users }))
     .catch(err => next(err));
 };
 
 const show = (req, res, next) => {
-  User.findById(req.params.id, userFilter)
+  User.where({id: req.params.id}, userFilter)
+    .fetch()
     .then(user => user ? res.json({ user }) : next())
     .catch(err => next(err));
 };
@@ -54,10 +56,9 @@ const signup = (req, res, next) => {
   ).then(() =>
     new User(user).save()
   ).then(newUser => {
-    let user = newUser.toObject();
     delete user.token;
     delete user.passwordDigest;
-    res.json({ user });
+    res.json({ newUser });
   }).catch(makeErrorHandler(res, next));
 
 };
@@ -65,17 +66,18 @@ const signup = (req, res, next) => {
 const signin = (req, res, next) => {
   let credentials = req.body.credentials;
   let search = { email: credentials.email };
-  User.findOne(search
-  ).then(user =>
-    user ? user.comparePassword(credentials.password) :
-          Promise.reject(new HttpError(404))
-  ).then(user =>
+  User.where(search).fetch()
+    .then(user => {
+      return user ? user.comparePassword(credentials.password) :
+          Promise.reject(new HttpError(404));
+  }).then(user =>
     getToken().then(token => {
-      user.token = token;
+      user.set({token: token});
+      user.password = credentials.password;
       return user.save();
     })
   ).then(user => {
-    user = user.toObject();
+    user = user.attributes;
     delete user.passwordDigest;
     user.token = encodeToken(user.token);
     res.json({ user });
@@ -84,7 +86,7 @@ const signin = (req, res, next) => {
 
 const signout = (req, res, next) => {
   getToken().then(token =>
-    User.findOneAndUpdate({
+    User.where({
       _id: req.params.id,
       token: req.currentUser.token,
     }, {
@@ -97,13 +99,15 @@ const signout = (req, res, next) => {
 
 const changepw = (req, res, next) => {
   debug('Changing password');
-  User.findOne({
-    _id: req.params.id,
+  User.where({
+    id: req.params.id,
     token: req.currentUser.token,
-  }).then(user =>
-    user ? user.comparePassword(req.body.passwords.old) :
-      Promise.reject(new HttpError(404))
-  ).then(user => {
+  })
+  .fetch()
+  .then(user => {
+    return user ? user.comparePassword(req.body.passwords.old) :
+      Promise.reject(new HttpError(404));
+  }).then(user => {
     user.password = req.body.passwords.new;
     return user.save();
   }).then((/* user */) =>

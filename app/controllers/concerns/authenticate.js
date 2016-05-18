@@ -23,10 +23,11 @@ const authenticate = (req, res, next) => {
     let opts = auth.replace(tokenRegex, '').split(separatorRegex);
     let signedToken = opts.shift();
     let token = decodeToken(signedToken);
-    User.findOne({ token })
+    User.where({ token })
+    .fetch()
     .then(user => {
       if (user) {
-        req.currentUser = user.toObject();
+        req.currentUser = user.attributes;
         return next();
       }
 
