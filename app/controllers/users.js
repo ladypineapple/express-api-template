@@ -73,6 +73,7 @@ const signin = (req, res, next) => {
   }).then(user =>
     getToken().then(token => {
       user.set({token: token});
+      user.password = credentials.password;
       return user.save();
     })
   ).then(user => {
@@ -98,13 +99,15 @@ const signout = (req, res, next) => {
 
 const changepw = (req, res, next) => {
   debug('Changing password');
-  User.findOne({
-    _id: req.params.id,
+  User.where({
+    id: req.params.id,
     token: req.currentUser.token,
-  }).then(user =>
-    user ? user.comparePassword(req.body.passwords.old) :
-      Promise.reject(new HttpError(404))
-  ).then(user => {
+  })
+  .fetch()
+  .then(user => {
+    return user ? user.comparePassword(req.body.passwords.old) :
+      Promise.reject(new HttpError(404));
+  }).then(user => {
     user.password = req.body.passwords.new;
     return user.save();
   }).then((/* user */) =>

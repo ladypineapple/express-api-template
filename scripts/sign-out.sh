@@ -1,5 +1,5 @@
 #!/bin/bash
-TOKEN="gYwBefyb6jj1IvGOyNhQU69nmAT/nt5p3/tWrnov/h4=--JZmbAMLCcOW1k5qoa7p89v35ycOjfnuxm/gu4i8vZ+o="
+TOKEN="Bw2xPxNF6QzJvhY7HrlBWKl4r5DtSahdHjGnpAZ+O2c=--uu7Z8qSr9OD45lwEScSjdvPS8EyVU4E6KQhPC2Dmh2E="
 ID="40"
 curl --include --request DELETE http://localhost:3000/sign-out/$ID \
   --header "Authorization: Token token=$TOKEN"
