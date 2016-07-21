@@ -7,36 +7,39 @@ const Example = models.example;
 const authenticate = require('./concerns/authenticate');
 
 const index = (req, res, next) => {
-  Example.find()
+  Example.where({})
+    .fetchAll()
     .then(examples => res.json({ examples }))
     .catch(err => next(err));
 };
 
 const show = (req, res, next) => {
-  Example.findById(req.params.id)
+  Example.where({id: req.params.id})
+    .fetch()
     .then(example => example ? res.json({ example }) : next())
     .catch(err => next(err));
 };
 
 const create = (req, res, next) => {
-  let example = Object.assign(req.body.example, {
-    _owner: req.currentUser._id,
-  });
-  Example.create(example)
+  let example = req.body;
+  example._owner = req.currentUser._id;
+  new Example(example)
+    .save()
     .then(example => res.json({ example }))
     .catch(err => next(err));
 };
 
 const update = (req, res, next) => {
   let search = { _id: req.params.id, _owner: req.currentUser._id };
-  Example.findOne(search)
+  Example.where(search)
+    .fetch()
     .then(example => {
       if (!example) {
         return next();
       }
 
       delete req.body._owner;  // disallow owner reassignment.
-      return example.update(req.body.example)
+      return example.save(req.body)
         .then(() => res.sendStatus(200));
     })
     .catch(err => next(err));
@@ -44,13 +47,14 @@ const update = (req, res, next) => {
 
 const destroy = (req, res, next) => {
   let search = { _id: req.params.id, _owner: req.currentUser._id };
-  Example.findOne(search)
+  Example.where(search)
+    .fetch()
     .then(example => {
       if (!example) {
         return next();
       }
 
-      return example.remove()
+      return example.destroy()
         .then(() => res.sendStatus(200));
     })
     .catch(err => next(err));
