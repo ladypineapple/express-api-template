@@ -55,7 +55,7 @@ const destroy = (req, res, next) => {
       }
 
       return example.destroy()
-        .then(() => res.sendStatus(200));
+        .then(() => res.sendStatus(204));
     })
     .catch(err => next(err));
 };
