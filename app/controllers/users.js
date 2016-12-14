@@ -10,7 +10,7 @@ const crypto = require('crypto');
 
 const authenticate = require('./concerns/authenticate');
 
-const HttpError = require('lib/wiring/http-error');
+const HttpError = require('lib/wiring/errors/http-error');
 
 const MessageVerifier = require('lib/wiring/message-verifier');
 
