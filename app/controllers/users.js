@@ -57,7 +57,7 @@ const signup = (req, res, next) => {
     let user = newUser.toObject();
     delete user.token;
     delete user.passwordDigest;
-    res.json({ user });
+    res.status(201).json({ user });
   }).catch(makeErrorHandler(res, next));
 
 };
@@ -91,7 +91,7 @@ const signout = (req, res, next) => {
       token,
     })
   ).then((user) =>
-    user ? res.sendStatus(200) : next()
+    user ? res.sendStatus(204) : next()
   ).catch(next);
 };
 
@@ -107,7 +107,7 @@ const changepw = (req, res, next) => {
     user.password = req.body.passwords.new;
     return user.save();
   }).then((/* user */) =>
-    res.sendStatus(200)
+    res.sendStatus(204)
   ).catch(makeErrorHandler(res, next));
 };
 
