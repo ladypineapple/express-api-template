@@ -17,6 +17,15 @@ const userSchema = new mongoose.Schema({
   passwordDigest: String,
 }, {
   timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: function (doc, pojoUser) {
+      // remove the _id of every document before returning the result
+      delete pojoUser.token;
+      delete pojoUser.passwordDigest;
+      return pojoUser;
+    },
+  },
 });
 
 userSchema.plugin(uniqueValidator);

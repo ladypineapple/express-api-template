@@ -26,16 +26,14 @@ const getToken = () =>
     )
   );
 
-const userFilter = { passwordDigest: 0, token: 0 };
-
 const index = (req, res, next) => {
-  User.find({}, userFilter)
+  User.find({})
     .then(users => res.json({ users }))
     .catch(err => next(err));
 };
 
 const show = (req, res, next) => {
-  User.findById(req.params.id, userFilter)
+  User.findById(req.params.id)
     .then(user => user ? res.json({ user }) : next())
     .catch(err => next(err));
 };
@@ -49,31 +47,27 @@ const makeErrorHandler = (res, next) =>
 const signup = (req, res, next) => {
   let credentials = req.body.credentials;
   let user = { email: credentials.email, password: credentials.password };
-  getToken().then(token =>
-    user.token = token
-  ).then(() =>
-    new User(user).save()
-  ).then(newUser => {
-    let user = newUser.toObject();
-    delete user.token;
-    delete user.passwordDigest;
-    res.status(201).json({ user });
-  }).catch(makeErrorHandler(res, next));
-
+  getToken()
+    .then(token => user.token = token)
+    .then(() =>
+      new User(user).save())
+    .then(user =>
+      res.status(201).json({ user }))
+    .catch(makeErrorHandler(res, next));
 };
 
 const signin = (req, res, next) => {
   let credentials = req.body.credentials;
   let search = { email: credentials.email };
-  User.findOne(search
-  ).then(user =>
-    user ? user.comparePassword(credentials.password) :
-          Promise.reject(new HttpError(404))
-  ).then(user =>
-    getToken().then(token => {
-      user.token = token;
-      return user.save();
-    })
+  User.findOne(search)
+    .then(user =>
+      user ? user.comparePassword(credentials.password) :
+            Promise.reject(new HttpError(404)))
+    .then(user =>
+      getToken().then(token => {
+        user.token = token;
+        return user.save();
+      })
   ).then(user => {
     user = user.toObject();
     delete user.passwordDigest;
