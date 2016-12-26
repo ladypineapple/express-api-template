@@ -67,13 +67,14 @@ const signin = (req, res, next) => {
       getToken().then(token => {
         user.token = token;
         return user.save();
-      })
-  ).then(user => {
-    user = user.toObject();
-    delete user.passwordDigest;
-    user.token = encodeToken(user.token);
-    res.json({ user });
-  }).catch(makeErrorHandler(res, next));
+      }))
+    .then(user => {
+      user = user.toObject();
+      delete user.passwordDigest;
+      user.token = encodeToken(user.token);
+      res.json({ user });
+    })
+    .catch(makeErrorHandler(res, next));
 };
 
 const signout = (req, res, next) => {
