@@ -6,6 +6,7 @@ const models = require('app/models');
 const Example = models.example;
 
 const authenticate = require('./concerns/authenticate');
+const setCurrentUser = require('./concerns/set-current-user');
 
 const setExample = (req, res, next) => {
   Example.findById(req.params.id, (error, example) => {
@@ -72,6 +73,7 @@ module.exports = controller({
   update,
   destroy,
 }, { before: [
+  { method: setCurrentUser, only: ['index', 'show'] },
   { method: authenticate, except: ['index', 'show'] },
   { method: setExample, only: ['show'] },
   { method: setExampleForCurrentUser, only: ['update', 'destroy'] },
