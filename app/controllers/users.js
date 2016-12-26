@@ -81,7 +81,7 @@ const signout = (req, res, next) => {
   getToken().then(token =>
     User.findOneAndUpdate({
       _id: req.params.id,
-      token: req.currentUser.token,
+      token: req.user.token,
     }, {
       token,
     })
@@ -94,7 +94,7 @@ const changepw = (req, res, next) => {
   debug('Changing password');
   User.findOne({
     _id: req.params.id,
-    token: req.currentUser.token,
+    token: req.user.token,
   }).then(user =>
     user ? user.comparePassword(req.body.passwords.old) :
       Promise.reject(new HttpError(404))

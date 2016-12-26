@@ -26,7 +26,7 @@ const authenticate = (req, res, next) => {
     User.findOne({ token })
     .then(user => {
       if (user) {
-        req.currentUser = user;
+        req.user = user;
         return next();
       }
 

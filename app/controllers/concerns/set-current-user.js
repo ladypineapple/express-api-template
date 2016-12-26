@@ -10,7 +10,7 @@ const decodeToken = (signedSecureToken) => {
   return mv.verify(signedSecureToken);
 };
 
-const setCurrentUser = function (req, res, next) {
+const setUser = function (req, res, next) {
   const tokenRegex = /^Token token=/;
   const separatorRegex = /\s*(?::|;|\t+)\s*/;
   let auth = req.headers.authorization;
@@ -20,7 +20,7 @@ const setCurrentUser = function (req, res, next) {
     let token = decodeToken(signedToken);
     User.findOne({ token })
       .then(user => {
-        req.currentUser = user;
+        req.user = user;
         next();
       })
       .catch(err => next(err));
@@ -29,4 +29,4 @@ const setCurrentUser = function (req, res, next) {
   }
 };
 
-module.exports = setCurrentUser;
+module.exports = setUser;
