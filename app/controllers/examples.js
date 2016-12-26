@@ -36,12 +36,17 @@ const setExampleForCurrentUser = (req, res, next) => {
 
 const index = (req, res, next) => {
   Example.find()
-    .then(examples => res.json({ examples }))
+    .then(examples => res.json({
+      examples: examples.map((e) =>
+        e.toJSON({ virtuals: true, user: req.currentUser })),
+    }))
     .catch(err => next(err));
 };
 
 const show = (req, res) => {
-  res.json({ example: req.example });
+  res.json({
+    example: req.example.toJSON({ virtuals: true, user: req.currentUser }),
+  });
 };
 
 const create = (req, res, next) => {
