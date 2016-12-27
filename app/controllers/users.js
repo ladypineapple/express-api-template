@@ -29,13 +29,13 @@ const getToken = () =>
 const index = (req, res, next) => {
   User.find({})
     .then(users => res.json({ users }))
-    .catch(err => next(err));
+    .catch(next);
 };
 
 const show = (req, res, next) => {
   User.findById(req.params.id)
     .then(user => user ? res.json({ user }) : next())
-    .catch(err => next(err));
+    .catch(next);
 };
 
 const makeErrorHandler = (res, next) =>

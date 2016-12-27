@@ -14,7 +14,7 @@ const index = (req, res, next) => {
       examples: examples.map((e) =>
         e.toJSON({ virtuals: true, user: req.user })),
     }))
-    .catch(err => next(err));
+    .catch(next);
 };
 
 const show = (req, res) => {
@@ -29,20 +29,20 @@ const create = (req, res, next) => {
   });
   Example.create(example)
     .then(example => res.status(201).json({ example }))
-    .catch(err => next(err));
+    .catch(next);
 };
 
 const update = (req, res, next) => {
   delete req.body._owner;  // disallow owner reassignment.
   req.example.update(req.body.example)
     .then(() => res.sendStatus(204))
-    .catch(err => next(err));
+    .catch(next);
 };
 
 const destroy = (req, res, next) => {
   req.example.remove()
     .then(() => res.sendStatus(204))
-    .catch(err => next(err));
+    .catch(next);
 };
 
 module.exports = controller({
