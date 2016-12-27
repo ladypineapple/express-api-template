@@ -28,7 +28,11 @@ const create = (req, res, next) => {
     _owner: req.user._id,
   });
   Example.create(example)
-    .then(example => res.status(201).json({ example }))
+    .then(example =>
+      res.status(201)
+        .json({
+          example: example.toJSON({ virtuals: true, user: req.user }),
+        }))
     .catch(next);
 };
 
