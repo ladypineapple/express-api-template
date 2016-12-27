@@ -36,7 +36,7 @@ const index = (req, res, next) => {
 };
 
 const show = (req, res, next) => {
-  User.where({id: req.params.id}, userFilter)
+  User.where({ id: req.params.id }, userFilter)
     .fetch()
     .then(user => user ? res.json({ user }) : next())
     .catch(err => next(err));
@@ -67,21 +67,22 @@ const signin = (req, res, next) => {
   let credentials = req.body.credentials;
   let search = { email: credentials.email };
   User.where(search).fetch()
+    .then(user =>
+      user ? user.comparePassword(credentials.password) :
+          Promise.reject(new HttpError(404)))
+    .then(user =>
+      getToken().then(token => {
+        user.set({ token: token });
+        user.password = credentials.password;
+        return user.save();
+      })
+    )
     .then(user => {
-      return user ? user.comparePassword(credentials.password) :
-          Promise.reject(new HttpError(404));
-  }).then(user =>
-    getToken().then(token => {
-      user.set({token: token});
-      user.password = credentials.password;
-      return user.save();
-    })
-  ).then(user => {
-    user = user.attributes;
-    delete user.passwordDigest;
-    user.token = encodeToken(user.token);
-    res.json({ user });
-  }).catch(makeErrorHandler(res, next));
+      user = user.attributes;
+      delete user.passwordDigest;
+      user.token = encodeToken(user.token);
+      res.json({ user });
+    }).catch(makeErrorHandler(res, next));
 };
 
 const signout = (req, res, next) => {
@@ -104,15 +105,17 @@ const changepw = (req, res, next) => {
     token: req.currentUser.token,
   })
   .fetch()
+  .then(user =>
+    user ? user.comparePassword(req.body.passwords.old) :
+      Promise.reject(new HttpError(404))
+  )
   .then(user => {
-    return user ? user.comparePassword(req.body.passwords.old) :
-      Promise.reject(new HttpError(404));
-  }).then(user => {
     user.password = req.body.passwords.new;
     return user.save();
-  }).then((/* user */) =>
-    res.sendStatus(200)
-  ).catch(makeErrorHandler(res, next));
+  })
+  .then((/* user */) =>
+    res.sendStatus(200))
+  .catch(makeErrorHandler(res, next));
 };
 
 module.exports = controller({

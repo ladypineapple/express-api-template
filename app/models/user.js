@@ -6,7 +6,7 @@ const Bookshelf = require('../middleware/bookshelf');
 const User = Bookshelf.Model.extend({
   tableName: 'users',
 
-  constructor: function() {
+  constructor () {
     Bookshelf.Model.apply(this, arguments);
 
     this.on('saving', function (model, attrs, options, next) {
@@ -24,14 +24,14 @@ const User = Bookshelf.Model.extend({
           bcrypt.hash(_this._password, salt, (err, data) =>
             err ? reject(err) : resolve(data)))
       ).then((digest) => {
-        _this.set({passwordDigest: digest});
+        _this.set({ passwordDigest: digest });
       }).catch((error) => {
         next(error);
       });
     });
   },
 
-  comparePassword: function(password) {
+  comparePassword (password) {
     let _this = this;
 
     return new Promise((resolve, reject) =>
@@ -42,14 +42,15 @@ const User = Bookshelf.Model.extend({
 
   virtuals: {
     password: {
-      set: function(password) {
+      set (password) {
         this._password = password;
       },
-      get: function() {
+
+      get () {
         return this._password;
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 module.exports = Bookshelf.model('User', User);
