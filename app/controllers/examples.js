@@ -1,38 +1,12 @@
 'use strict';
 
-const HttpError = require('lib/wiring/errors/http-error');
 const controller = require('lib/wiring/controller');
 const models = require('app/models');
 const Example = models.example;
 
 const authenticate = require('./concerns/authenticate');
 const setUser = require('./concerns/set-current-user');
-
-const setExample = (req, res, next) => {
-  Example.findById(req.params.id, (error, example) => {
-    error = error || !example && new HttpError(404);
-    if (error) {
-      return next(error);
-    }
-
-    req.example = example;
-    next();
-  });
-};
-
-const setExampleForuser = (req, res, next) => {
-  let modelId = req.params.id || null;
-  let ownerId = req.user._id || null;
-  Example.findOne({ _id: modelId, _owner: ownerId }, (error, example) => {
-    error = error || !example && new HttpError(404);
-    if (error) {
-      return next(error);
-    }
-
-    req.example = example;
-    next();
-  });
-};
+const setModel = require('./concerns/set-mongoose-model');
 
 const index = (req, res, next) => {
   Example.find()
@@ -80,6 +54,6 @@ module.exports = controller({
 }, { before: [
   { method: setUser, only: ['index', 'show'] },
   { method: authenticate, except: ['index', 'show'] },
-  { method: setExample, only: ['show'] },
-  { method: setExampleForuser, only: ['update', 'destroy'] },
+  { method: setModel(Example), only: ['show'] },
+  { method: setModel(Example, { forUser: true }), only: ['update', 'destroy'] },
 ], });
