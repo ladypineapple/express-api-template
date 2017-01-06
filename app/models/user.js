@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema({
       return pojoUser;
     },
   },
+  toObject: {
+    virtuals: true,
+  },
 });
 
 userSchema.plugin(uniqueValidator);
