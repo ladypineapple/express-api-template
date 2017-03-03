@@ -1,14 +1,12 @@
 'use strict';
 
-const testPort = +('ga'.split('')
-  .reduce((p, c) => p + c.charCodeAt().toString(16), ''));
+const testDatabase = 'mongodb://localhost/express-api-template-test';
 
 module.exports = {
   options: {
     env: {
-      NODE_ENV: 'test',
+      MONGODB_URI: testDatabase,
       NODE_PATH: process.env.PWD,
-      PORT: testPort,
     },
   },
   all: ['<%= paths.src.spec %>'],
